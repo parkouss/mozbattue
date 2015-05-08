@@ -47,4 +47,4 @@ try to find the root cause.
 
   To run the same build on the 30th revision before the oldest intermittent::
 
-    mozbattue trigger <bugid> -15 --times 20
+    mozbattue trigger <bugid> -30 --times 20
