@@ -52,7 +52,8 @@ def do_show(opts):
     raw_bugs = load_bugs_from_file(opts.input)
     if opts.bugid not in raw_bugs:
         sys.exit("Unable to find bug %s." % opts.bugid)
-    intermittents = intermittents_by_time(raw_bugs[opts.bugid])
+    intermittents = \
+        intermittents_by_time(raw_bugs[opts.bugid]['intermittents'])
     oldest = intermittents[0]
 
     print "Oldest intermittent on %s (%s)" % (oldest['timestamp'],
@@ -81,7 +82,8 @@ def do_trigger(opts):
     raw_bugs = load_bugs_from_file(opts.input)
     if opts.bugid not in raw_bugs:
         sys.exit("Unable to find bug %s." % opts.bugid)
-    intermittents = intermittents_by_time(raw_bugs[opts.bugid])
+    intermittents = \
+        intermittents_by_time(raw_bugs[opts.bugid]['intermittents'])
     oldest = intermittents[0]
 
     url = trigger_jobs(oldest['buildname'], oldest['revision'],

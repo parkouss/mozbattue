@@ -2,16 +2,26 @@ import json
 import datetime
 
 DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%S'
-
+JSON_FORMAT_VERSION = '1.0'
 
 class MozBattueError(Exception):
     pass
 
 
 def load_bugs(stream):
-    bugs = json.load(stream)
-    for intermittents in bugs.itervalues():
-        for intermittent in intermittents:
+    data = json.load(stream)
+
+    # check version
+    version_ok = False
+    if 'metadata' in data:
+        version_ok = data['metadata'].get('version') == JSON_FORMAT_VERSION
+    if not version_ok:
+        raise MozBattueError("The json data is no more compatible with this "
+                             "version - you should update the data.")
+    bugs = data['bugs']
+
+    for bug in bugs.itervalues():
+        for intermittent in bug['intermittents']:
             intermittent['timestamp'] = \
                 datetime.datetime.strptime(intermittent['timestamp'],
                                            DATETIME_FORMAT)
@@ -22,7 +32,12 @@ def dump_bugs(bugs, stream):
         if isinstance(obj, datetime.datetime):
             return obj.strftime(DATETIME_FORMAT)
         return obj
-    json.dump(bugs, stream, sort_keys=True, indent=4,
+
+    data = {
+        'metadata': {'version': JSON_FORMAT_VERSION},
+        'bugs': bugs,
+    }
+    json.dump(data, stream, sort_keys=True, indent=4,
               separators=(',', ': '), default=default)
 
 

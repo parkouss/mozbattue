@@ -3,7 +3,8 @@ from mozbattue.utils import intermittents_by_time
 
 def bug_list(raw_bugs, filter=None, sort_by=()):
     bugs = []
-    for bugid, intermittents in raw_bugs.iteritems():
+    for bugid, bug in raw_bugs.iteritems():
+        intermittents = bug['intermittents']
         oldest = intermittents_by_time(intermittents)[0]
         bugs.append({
             'id': bugid,
