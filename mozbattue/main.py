@@ -30,6 +30,9 @@ def do_list(opts):
         sort_by.append((k, reverse))
 
     def filter(bug):
+        if not opts.show_resolved:
+            if bug['status'] == 'RESOLVED':
+                return False
         return bug['nb'] >= opts.min_intermittents
 
     bugs = bug_list(raw_bugs, sort_by=sort_by, filter=filter)
@@ -153,6 +156,8 @@ def parse_args(argv=None):
                       type=int,
                       help="Limit the number of bugs shown "
                            "(default: %(default)r - no limit)")
+    list.add_argument('--show-resolved', action='store_true',
+                      help="Also list the resolved bugs.")
     list.set_defaults(func=do_list)
 
     show = subparsers.add_parser(

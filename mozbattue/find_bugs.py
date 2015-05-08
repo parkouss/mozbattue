@@ -70,6 +70,7 @@ class BugsyFinder(object):
             if intermittents:
                 result[bug.id] = {
                     'intermittents': intermittents,
+                    'status': bug.status,
                 }
             self.reporter.bug_analyzed(bug, intermittents)
         self.reporter.finished(result)

@@ -11,6 +11,7 @@ def bug_list(raw_bugs, filter=None, sort_by=()):
             'nb': len(intermittents),
             'date': oldest['timestamp'],
             'rev': oldest['revision'],
+            'status': bug['status'],
         })
     if filter:
         bugs = [b for b in bugs if filter(b)]
