@@ -87,7 +87,12 @@ def do_trigger(opts):
     url = trigger_jobs(oldest['buildname'], oldest['revision'],
                        back_revisions=abs(opts.back_revisions),
                        times=opts.times, dry_run=opts.dry_run)
+
+    print "Use the following treeherder url to keep track of the builds:"
+    print
     print url
+    print
+    print 'Note that the builds on treeherder will appear in a few minutes.'
 
 
 def parse_args(argv=None):
