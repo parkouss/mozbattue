@@ -30,6 +30,9 @@ def do_list(opts):
         sort_by.append((k, reverse))
 
     def filter(bug):
+        if not opts.show_assigned_to:
+            if bug['assigned_to'] != 'nobody@mozilla.org':
+                return False
         if not opts.show_resolved:
             if bug['status'] == 'RESOLVED':
                 return False
@@ -158,6 +161,8 @@ def parse_args(argv=None):
                            "(default: %(default)r - no limit)")
     list.add_argument('--show-resolved', action='store_true',
                       help="Also list the resolved bugs.")
+    list.add_argument('--show-assigned-to', action='store_true',
+                      help="Also list the bugs that are assigned.")
     list.set_defaults(func=do_list)
 
     show = subparsers.add_parser(

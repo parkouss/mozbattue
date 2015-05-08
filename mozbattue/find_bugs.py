@@ -60,6 +60,7 @@ class BugsyFinder(object):
             .keywords("intermittent-failure") \
             .change_history_fields(['[Bug creation]']) \
             .timeframe(str(start_date), str(date_limit)) \
+            .include_fields('assigned_to') \
             .search()
 
         self.reporter.got_bugs(bugs)
@@ -71,6 +72,7 @@ class BugsyFinder(object):
                 result[bug.id] = {
                     'intermittents': intermittents,
                     'status': bug.status,
+                    'assigned_to': bug.to_dict()['assigned_to'],
                 }
             self.reporter.bug_analyzed(bug, intermittents)
         self.reporter.finished(result)
