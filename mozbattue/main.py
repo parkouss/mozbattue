@@ -1,5 +1,6 @@
 import argparse
 import sys
+import logging
 
 from mozbattue.utils import MozBattueError, load_bugs_from_file, dump_bugs, \
     intermittents_by_time
@@ -185,6 +186,8 @@ def parse_args(argv=None):
 
 def main(argv=None):
     opts = parse_args()
+    logging.basicConfig(level=logging.INFO)
+    logging.getLogger('requests').setLevel(logging.WARNING)
     try:
         opts.func(opts)
     except KeyboardInterrupt:
