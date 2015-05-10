@@ -12,7 +12,8 @@ def do_update(opts):
     # load previous bugs if any
     previous_bugs = None
     try:
-        previous_bugs = load_bugs_from_file(opts.output)
+        previous_bugs = load_bugs_from_file(opts.output,
+                                            kept_no_intermittents=True)
     except:
         pass
 

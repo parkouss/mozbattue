@@ -81,13 +81,13 @@ class BugsyFinder(object):
                     result[bug.id] = prev_bug
                     continue
             intermittents = self._get_intermittents(bug)
-            if intermittents:
-                result[bug.id] = {
-                    'intermittents': intermittents,
-                    'status': bug.status,
-                    'assigned_to': bug_dict['assigned_to'],
-                    'last_change_time': bug_dict['last_change_time'],
-                }
+
+            result[bug.id] = {
+                'intermittents': intermittents,
+                'status': bug.status,
+                'assigned_to': bug_dict['assigned_to'],
+                'last_change_time': bug_dict['last_change_time'],
+            }
             self.reporter.bug_analyzed(bug, intermittents)
         self.reporter.finished(result)
         return result
@@ -122,9 +122,14 @@ class BugsyPrintReporter(BugsyReporter):
         self.upd2date.add(bug.id)
 
     def finished(self, result):
-        up2date = ''
-        if self.upd2date:
-            up2date = ' (%d already up to date)' % len(self.upd2date)
+        # keep only bugs that have intermittents
+        res = [k for k, v in result.iteritems() if v['intermittents']]
+        # remove the bugs without intermittents from the up2date list
+        upd2date = self.upd2date - set([k for k, v in result.iteritems()
+                                        if not v['intermittents']])
+        up2date_str = ''
+        if upd2date:
+            up2date_str = ' (%d already up to date)' % len(upd2date)
         self.output("Finished analysis - kept %d new intermittents%s\n",
-                    len([bid for bid in result if bid not in self.upd2date]),
-                    up2date)
+                    len([bid for bid in res if bid not in upd2date]),
+                    up2date_str)

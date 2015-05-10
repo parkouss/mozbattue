@@ -8,7 +8,7 @@ class MozBattueError(Exception):
     pass
 
 
-def load_bugs(stream):
+def load_bugs(stream, kept_no_intermittents=False):
     data = json.load(stream)
 
     # check version
@@ -20,11 +20,17 @@ def load_bugs(stream):
                              "version - you should update the data.")
     bugs = data['bugs']
 
+    if not kept_no_intermittents:
+        for bugid, bug in bugs.items():
+            if not bug['intermittents']:
+                del bugs[bugid]
+
     for bug in bugs.itervalues():
         for intermittent in bug['intermittents']:
             intermittent['timestamp'] = \
                 datetime.datetime.strptime(intermittent['timestamp'],
                                            DATETIME_FORMAT)
+
     return bugs
 
 def dump_bugs(bugs, stream):
@@ -41,10 +47,10 @@ def dump_bugs(bugs, stream):
               separators=(',', ': '), default=default)
 
 
-def load_bugs_from_file(fname):
+def load_bugs_from_file(fname, kept_no_intermittents=False):
     try:
         with open(fname) as f:
-            return load_bugs(f)
+            return load_bugs(f, kept_no_intermittents=kept_no_intermittents)
     except IOError, exc:
         raise MozBattueError("Unable to load bug data from %r: %s"
                              % (fname, exc))
