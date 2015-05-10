@@ -40,6 +40,8 @@ def do_list(opts):
         sort_by.append((k, reverse))
 
     def filter(bug):
+        if bug['product'] in opts.filter_products:
+            return False
         if not opts.show_assigned_to:
             if bug['assigned_to'] != 'nobody@mozilla.org':
                 return False
@@ -52,10 +54,11 @@ def do_list(opts):
     if opts.limit > 0:
         bugs = bugs[:opts.limit]
 
-    renderer = TableRenderer(('id', 'nb', 'date'))
+    renderer = TableRenderer(('id', 'nb', 'date', 'product'))
 
     for b in bugs:
-        renderer.add_row(str(b['id']), str(b['nb']), str(b['date']))
+        renderer.add_row(str(b['id']), str(b['nb']), str(b['date']),
+                         b['product'])
 
     renderer.render()
 
@@ -111,6 +114,11 @@ def do_trigger(opts):
     print url
     print
     print 'Note that the builds on treeherder will appear in a few minutes.'
+
+
+def comma_set(value):
+    values = [v.strip() for v in value.split(',')]
+    return set(v for v in values if v)
 
 
 def parse_args(argv=None):
@@ -173,6 +181,9 @@ def parse_args(argv=None):
                       help="Also list the resolved bugs.")
     list.add_argument('--show-assigned-to', action='store_true',
                       help="Also list the bugs that are assigned.")
+    list.add_argument('--filter-products', default=(),
+                      type=comma_set,
+                      help="comma separated list of products to filter")
     list.set_defaults(func=do_list)
 
     show = subparsers.add_parser(

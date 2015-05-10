@@ -14,6 +14,7 @@ def bug_list(raw_bugs, filter=None, sort_by=()):
             'rev': oldest['revision'],
             'status': bug['status'],
             'assigned_to': bug['assigned_to'],
+            'product': bug['product'],
         })
     if filter:
         bugs = [b for b in bugs if filter(b)]

@@ -86,6 +86,7 @@ class BugsyFinder(object):
             result[bug.id] = {
                 'intermittents': intermittents,
                 'status': bug.status,
+                'product': bug.product,
                 'assigned_to': bug_dict['assigned_to'],
                 'last_change_time': bug_dict['last_change_time'],
             }

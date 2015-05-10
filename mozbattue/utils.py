@@ -2,7 +2,7 @@ import json
 import datetime
 
 DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%S'
-JSON_FORMAT_VERSION = '1.1'
+JSON_FORMAT_VERSION = '1.2'
 
 
 class MozBattueError(Exception):
