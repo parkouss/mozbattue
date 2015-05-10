@@ -17,6 +17,9 @@ class BugsyReporter(object):
     def bug_analyzed(self, bug, intermittents):
         pass
 
+    def bug_already_up2date(self, bug):
+        pass
+
     def finished(self, result):
         pass
 
@@ -25,9 +28,10 @@ class BugsyFinder(object):
     RE_EXTRACT_BUG_INFO = \
         re.compile("^(buildname|revision|start_time|submit_timestamp): (.+)")
 
-    def __init__(self, reporter=None):
+    def __init__(self, reporter=None, previous_bugs=None):
         self.bugzilla = bugsy.Bugsy()
         self.reporter = reporter or BugsyReporter()
+        self.previous_bugs = previous_bugs
 
     def _get_intermittents(self, bug):
         intermittents = []
@@ -60,19 +64,29 @@ class BugsyFinder(object):
             .keywords("intermittent-failure") \
             .change_history_fields(['[Bug creation]']) \
             .timeframe(str(start_date), str(date_limit)) \
-            .include_fields('assigned_to') \
+            .include_fields('assigned_to', 'last_change_time') \
             .search()
 
         self.reporter.got_bugs(bugs)
         result = {}
         for bug in bugs:
+            bug_dict = bug.to_dict()
             self.reporter.bug_analysis_started(bug)
+
+            if self.previous_bugs:
+                prev_bug = self.previous_bugs.get(str(bug.id))
+                if prev_bug and (bug_dict['last_change_time'] ==
+                                 prev_bug['last_change_time']):
+                    self.reporter.bug_already_up2date(bug)
+                    result[bug.id] = prev_bug
+                    continue
             intermittents = self._get_intermittents(bug)
             if intermittents:
                 result[bug.id] = {
                     'intermittents': intermittents,
                     'status': bug.status,
-                    'assigned_to': bug.to_dict()['assigned_to'],
+                    'assigned_to': bug_dict['assigned_to'],
+                    'last_change_time': bug_dict['last_change_time'],
                 }
             self.reporter.bug_analyzed(bug, intermittents)
         self.reporter.finished(result)
@@ -84,6 +98,7 @@ class BugsyPrintReporter(BugsyReporter):
         self.stream = stream
         self.nb_bugs = 0
         self.current_bug = 0
+        self.upd2date = set()
 
     def output(self, txt, *args):
         if args:
@@ -103,6 +118,13 @@ class BugsyPrintReporter(BugsyReporter):
         self.output("Analyzing bug %s (%d/%d)\r", bug.id, self.current_bug,
                     self.nb_bugs)
 
+    def bug_already_up2date(self, bug):
+        self.upd2date.add(bug.id)
+
     def finished(self, result):
-        self.output("Finished analysis - kept %d intermittents\n",
-                    len(result))
+        up2date = ''
+        if self.upd2date:
+            up2date = ' (%d already up to date)' % len(self.upd2date)
+        self.output("Finished analysis - kept %d new intermittents%s\n",
+                    len([bid for bid in result if bid not in self.upd2date]),
+                    up2date)

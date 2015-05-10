@@ -9,7 +9,15 @@ from mozbattue.find_bugs import BugsyFinder, BugsyPrintReporter
 from mozbattue.trigger import trigger_jobs
 
 def do_update(opts):
-    finder = BugsyFinder(reporter=BugsyPrintReporter())
+    # load previous bugs if any
+    previous_bugs = None
+    try:
+        previous_bugs = load_bugs_from_file(opts.output)
+    except:
+        pass
+
+    finder = BugsyFinder(reporter=BugsyPrintReporter(),
+                         previous_bugs=previous_bugs)
     bugs = finder.find(days_ago=opts.days_ago)
     with open(opts.output, 'w') as f:
         dump_bugs(bugs, f)
