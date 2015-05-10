@@ -4,6 +4,7 @@ import datetime
 DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%S'
 JSON_FORMAT_VERSION = '1.1'
 
+
 class MozBattueError(Exception):
     pass
 
@@ -33,6 +34,7 @@ def load_bugs(stream, kept_no_intermittents=False):
 
     return bugs
 
+
 def dump_bugs(bugs, stream):
     def default(obj):
         if isinstance(obj, datetime.datetime):
@@ -57,4 +59,4 @@ def load_bugs_from_file(fname, kept_no_intermittents=False):
 
 
 def intermittents_by_time(intermittents):
-    return sorted(intermittents, key=lambda i:i['timestamp'])
+    return sorted(intermittents, key=lambda i: i['timestamp'])

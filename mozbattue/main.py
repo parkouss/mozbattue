@@ -8,6 +8,7 @@ from mozbattue.bugs_info import bug_list, TableRenderer
 from mozbattue.find_bugs import BugsyFinder, BugsyPrintReporter
 from mozbattue.trigger import trigger_jobs
 
+
 def do_update(opts):
     # load previous bugs if any
     previous_bugs = None
@@ -128,7 +129,7 @@ def parse_args(argv=None):
     update.add_argument('-o', '--output',
                         default=intermittent_file,
                         help="file to store the intermittent bugs data "
-                               "(default: %(default)r)")
+                             "(default: %(default)r)")
     update.add_argument('-d', '--days-ago',
                         default=27,
                         type=int,

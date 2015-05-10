@@ -1,6 +1,7 @@
 import sys
 from mozbattue.utils import intermittents_by_time
 
+
 def bug_list(raw_bugs, filter=None, sort_by=()):
     bugs = []
     for bugid, bug in raw_bugs.iteritems():
@@ -20,6 +21,7 @@ def bug_list(raw_bugs, filter=None, sort_by=()):
         bugs = sorted(bugs, key=lambda b: b[key], reverse=reverse)
     return bugs
 
+
 class TableRenderer(object):
     def __init__(self, cols, sep='  '):
         self.cols = cols
@@ -31,7 +33,7 @@ class TableRenderer(object):
 
     def render(self, stream=sys.stdout):
         # calculate column sizes
-        col_data = [ [c] for c in self.cols ]
+        col_data = [[c] for c in self.cols]
         for row in self.data:
             for i, d in enumerate(row):
                 col_data[i].append(d)

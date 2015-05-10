@@ -37,7 +37,7 @@ class BugsyFinder(object):
         intermittents = []
         for comment in bug.get_comments():
             intermittent = {}
-            for line in  comment.text.splitlines():
+            for line in comment.text.splitlines():
                 res = self.RE_EXTRACT_BUG_INFO.match(line)
                 if not res:
                     continue
@@ -46,7 +46,8 @@ class BugsyFinder(object):
             if 'start_time' in intermittent:
                 intermittent['timestamp'] = intermittent.pop('start_time')
             if 'submit_timestamp' in intermittent:
-                intermittent['timestamp'] = intermittent.pop('submit_timestamp')
+                intermittent['timestamp'] = \
+                    intermittent.pop('submit_timestamp')
             if len(intermittent) == 3:
                 # all intermittent info is here
                 intermittent['timestamp'] = \
