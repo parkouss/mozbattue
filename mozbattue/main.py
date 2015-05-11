@@ -1,9 +1,10 @@
 import argparse
+import os
 import sys
 import logging
 
 from mozbattue.utils import MozBattueError, load_bugs_from_file, dump_bugs, \
-    intermittents_by_time
+    intermittents_by_time, Config, LOG
 from mozbattue.bugs_info import bug_list, TableRenderer
 from mozbattue.find_bugs import BugsyFinder, BugsyPrintReporter
 from mozbattue.trigger import trigger_jobs
@@ -25,8 +26,15 @@ def do_update(opts):
         dump_bugs(bugs, f)
 
 
+def read_bugs(opts):
+    return load_bugs_from_file(
+        opts.input,
+        filter_intermittents=opts.conf.create_filter_intermittents()
+    )
+
+
 def do_list(opts):
-    raw_bugs = load_bugs_from_file(opts.input)
+    raw_bugs = read_bugs(opts)
 
     sort_by = []
     for k in opts.sort_by.split(','):
@@ -68,7 +76,7 @@ def do_list(opts):
 
 
 def do_show(opts):
-    raw_bugs = load_bugs_from_file(opts.input)
+    raw_bugs = read_bugs(opts)
     if opts.bugid not in raw_bugs:
         sys.exit("Unable to find bug %s." % opts.bugid)
     intermittents = \
@@ -98,7 +106,7 @@ def do_show(opts):
 
 
 def do_trigger(opts):
-    raw_bugs = load_bugs_from_file(opts.input)
+    raw_bugs = read_bugs(opts)
     if opts.bugid not in raw_bugs:
         sys.exit("Unable to find bug %s." % opts.bugid)
     intermittents = \
@@ -124,6 +132,10 @@ def comma_set(value):
 def parse_args(argv=None):
     intermittent_file = 'intermittents.json'
     parser = argparse.ArgumentParser()
+
+    parser.add_argument('--conf-file', default="mozbattue.ini",
+                        help="path of the configuration file. (default: "
+                             "%(default)r)")
 
     subparsers = parser.add_subparsers()
 
@@ -224,8 +236,14 @@ def parse_args(argv=None):
 
 def main(argv=None):
     opts = parse_args()
+
     logging.basicConfig(level=logging.INFO)
     logging.getLogger('requests').setLevel(logging.WARNING)
+
+    opts.conf = Config()
+    if os.path.isfile(opts.conf_file):
+        LOG.info("Reading conf file %r", opts.conf_file)
+        opts.conf.read(opts.conf_file)
     try:
         opts.func(opts)
     except KeyboardInterrupt:
