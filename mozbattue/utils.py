@@ -1,8 +1,11 @@
 import json
 import datetime
+import logging
 
 DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%S'
 JSON_FORMAT_VERSION = '1.2'
+
+LOG = logging.getLogger('mozbattue')
 
 
 class MozBattueError(Exception):

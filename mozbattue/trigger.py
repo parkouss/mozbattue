@@ -4,6 +4,7 @@ import urllib
 from mozci.mozci import query_builders, query_repo_url_from_buildername, \
     query_repo_name_from_buildername, trigger_job
 from mozci.sources.pushlog import query_revision_info, query_pushid_range
+from mozbattue.utils import LOG
 
 
 def sanitize_buildername(buildername):
@@ -35,7 +36,7 @@ def trigger_jobs(buildername, revision, back_revisions=30, times=30,
     requests = \
         trigger_job(revision, buildername, times=times, dry_run=dry_run)
     if any(req.status_code != 202 for req in requests):
-        print 'WARNING: not all requests succeded'
+        LOG.warn('WARNING: not all requests succeded')
 
     return ('https://treeherder.mozilla.org/#/jobs?%s' % urllib.urlencode({
         'repo': repo_name,
