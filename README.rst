@@ -17,6 +17,10 @@ For now::
 
   pip install git+https://github.com/parkouss/mozbattue.git
 
+You can also copy the https://github.com/parkouss/mozbattue/blob/master/mozbattue.ini
+file in your working dir to have some default configuration when using mozbattue
+to find firefox bugs.
+
 Quick start
 ===========
 
