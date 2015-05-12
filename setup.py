@@ -14,4 +14,6 @@ setup(name="mozbattue",
         """,
       platforms=['Any'],
       install_requires=['bugsy', 'mozci'],
+      tests_require=['mock'],
+      test_suite='tests',
 )
