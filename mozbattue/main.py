@@ -113,7 +113,8 @@ def do_trigger(opts):
         intermittents_by_time(raw_bugs[opts.bugid]['intermittents'])
     oldest = intermittents[0]
 
-    url = trigger_jobs(oldest['buildname'], oldest['revision'],
+    url = trigger_jobs(opts.buildname or oldest['buildname'],
+                       oldest['revision'],
                        back_revisions=abs(opts.back_revisions),
                        times=opts.times, dry_run=opts.dry_run)
 
@@ -227,6 +228,8 @@ def parse_args(argv=None):
                          default=30,
                          help="Number of build for the revision "
                               " (default: %(default)r")
+    trigger.add_argument("-b", "--buildname",
+                         help="Specify a buildname to trigger")
     trigger.add_argument("--dry-run", action="store_true",
                          help="flag to test without actual push")
     trigger.set_defaults(func=do_trigger)
