@@ -129,6 +129,9 @@ class BugsyPrintReporter(BugsyReporter):
         # remove the bugs without intermittents from the up2date list
         upd2date = self.upd2date - set([k for k, v in result.iteritems()
                                         if not v['intermittents']])
+        if self.nb_bugs != len(res):
+            self.output("Found %d bugs without intermittents data - "
+                        "we won't use them\n", self.nb_bugs - len(res))
         up2date_str = ''
         if upd2date:
             up2date_str = ' (%d already up to date)' % len(upd2date)
