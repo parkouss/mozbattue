@@ -5,7 +5,7 @@ import logging
 
 from mozbattue.utils import MozBattueError, load_bugs_from_file, dump_bugs, \
     intermittents_by_time, Config, LOG
-from mozbattue.bugs_info import bug_list, TableRenderer
+from mozbattue.bugs_info import BugTable, IntermittentTable
 from mozbattue.find_bugs import BugsyFinder, BugsyPrintReporter
 from mozbattue.trigger import trigger_jobs
 
@@ -58,21 +58,17 @@ def do_list(opts):
                 return False
         return bug['nb'] >= opts.min_intermittents
 
-    bugs = bug_list(raw_bugs, sort_by=sort_by, filter=filter)
+    table = BugTable(raw_bugs, ('id', 'nb', 'date', 'product'))
+    table.raw_filter(filter)
+    table.sort(sort_by)
     if opts.limit > 0:
-        bugs = bugs[:opts.limit]
+        table.data = table.data[:opts.limit]
 
-    renderer = TableRenderer(('id', 'nb', 'date', 'product'))
-
-    for b in bugs:
-        renderer.add_row(str(b['id']), str(b['nb']), str(b['date']),
-                         b['product'])
-
-    renderer.render()
+    table.render()
 
     print
     print ("Listing %d/%d intermittent bugs."
-           % (len(bugs), len(raw_bugs)))
+           % (len(table.data), len(raw_bugs)))
 
 
 def do_show(opts):
@@ -90,19 +86,15 @@ def do_show(opts):
     if opts.full:
         print "List of intermittents:"
 
-        renderer = TableRenderer(('date', 'revision', 'buildname'))
-        for i in intermittents:
-            renderer.add_row(str(i['timestamp']), str(i['revision']),
-                             repr(str(i['buildname'])))
-        renderer.render()
+        visible_columns = ('date', 'revision', 'buildname')
     else:
-        i_for_revision = [i for i in intermittents
-                          if i['revision'] == oldest['revision']]
+        intermittents = [i for i in intermittents
+                         if i['revision'] == oldest['revision']]
         print "Was triggered by:"
-        renderer = TableRenderer(('date', 'buildname'))
-        for i in i_for_revision:
-            renderer.add_row(str(i['timestamp']), repr(str(i['buildname'])))
-        renderer.render()
+        visible_columns = ('date', 'buildname')
+
+    table = IntermittentTable(intermittents, visible_columns)
+    table.render()
 
 
 def do_trigger(opts):
@@ -253,3 +245,6 @@ def main(argv=None):
         sys.exit('Interrupted\n')
     except MozBattueError as exc:
         sys.exit(str(exc))
+
+if __name__ == '__main__':
+    main()

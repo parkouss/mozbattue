@@ -2,25 +2,41 @@ import sys
 from mozbattue.utils import intermittents_by_time
 
 
-def bug_list(raw_bugs, filter=None, sort_by=()):
-    bugs = []
-    for bugid, bug in raw_bugs.iteritems():
-        intermittents = bug['intermittents']
-        oldest = intermittents_by_time(intermittents)[0]
-        bugs.append({
-            'id': bugid,
-            'nb': len(intermittents),
-            'date': oldest['timestamp'],
-            'rev': oldest['revision'],
-            'status': bug['status'],
-            'assigned_to': bug['assigned_to'],
-            'product': bug['product'],
-        })
-    if filter:
-        bugs = [b for b in bugs if filter(b)]
-    for key, reverse in reversed(sort_by):
-        bugs = sorted(bugs, key=lambda b: b[key], reverse=reverse)
-    return bugs
+class Column(object):
+    def __init__(self, renderer=str):
+        self.renderer = renderer
+
+    def render_value(self, value):
+        return self.renderer(value)
+
+
+class Table(object):
+    columns = {}
+
+    def __init__(self, visible_columns=()):
+        self.data = []
+        self.visible_columns = visible_columns or self.columns.keys()
+
+    def add_row(self, row):
+        self.data.append(row)
+
+    def sort(self, sort_by=()):
+        for key, reverse in reversed(sort_by):
+            self.data = sorted(self.data, key=lambda b: b[key],
+                               reverse=reverse)
+
+    def raw_filter(self, filter):
+        self.data = [d for d in self.data if filter(d)]
+
+    def render(self, stream=sys.stdout, sep='  '):
+        renderer = TableRenderer(self.visible_columns, sep=sep)
+        for row in self.data:
+            data_row = []
+            for column_name in self.visible_columns:
+                col = self.columns[column_name]
+                data_row.append(col.render_value(row[column_name]))
+            renderer.add_row(*data_row)
+        renderer.render(stream=stream)
 
 
 class TableRenderer(object):
@@ -50,3 +66,47 @@ class TableRenderer(object):
         for row in self.data:
             stream.write(fmt % tuple(row))
             stream.write('\n')
+
+
+class BugTable(Table):
+    columns = {
+        'id': Column(str),
+        'nb': Column(str),
+        'date': Column(str),
+        'rev': Column(str),
+        'status': Column(str),
+        'assigned_to': Column(str),
+        'product': Column(str),
+    }
+
+    def __init__(self, raw_bugs, visible_columns=()):
+        Table.__init__(self, visible_columns=visible_columns)
+        for bugid, bug in raw_bugs.iteritems():
+            intermittents = bug['intermittents']
+            oldest = intermittents_by_time(intermittents)[0]
+            self.add_row({
+                'id': bugid,
+                'nb': len(intermittents),
+                'date': oldest['timestamp'],
+                'rev': oldest['revision'],
+                'status': bug['status'],
+                'assigned_to': bug['assigned_to'],
+                'product': bug['product'],
+            })
+
+
+class IntermittentTable(Table):
+    columns = {
+        'date': Column(str),
+        'revision': Column(str),
+        'buildname': Column(lambda v: repr(str(v))),
+    }
+
+    def __init__(self, intermittents, visible_columns=()):
+        Table.__init__(self, visible_columns=visible_columns)
+        for i in intermittents:
+            self.add_row({
+                'date': i['timestamp'],
+                'revision': i['revision'],
+                'buildname': i['buildname'],
+            })
