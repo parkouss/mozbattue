@@ -47,7 +47,7 @@ def do_list(opts):
                 return False
         return bug['nb'] >= opts.min_intermittents
 
-    table = BugTable(raw_bugs, ('id', 'nb', 'date', 'product'))
+    table = BugTable(raw_bugs, opts.visible_columns)
     table.raw_filter(filter)
     table.string_sort(opts.sort_by)
     if opts.limit > 0:

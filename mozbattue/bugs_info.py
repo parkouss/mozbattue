@@ -94,13 +94,17 @@ class BugTable(Table):
         'status': Column(str, desc='Status of the bug'),
         'assigned_to': Column(str, desc='Assignment of the bug'),
         'product': Column(str, desc='Product of the bug'),
+        'average_day': Column(lambda v: '%.2f' % v,
+                              desc="Average number of intermittents occurences"
+                                   " in one day"),
     }
 
     def __init__(self, raw_bugs, visible_columns=()):
         Table.__init__(self, visible_columns=visible_columns)
         for bugid, bug in raw_bugs.iteritems():
-            intermittents = bug['intermittents']
-            oldest = intermittents_by_time(intermittents)[0]
+            intermittents = intermittents_by_time(bug['intermittents'])
+            oldest, newest = intermittents[0], intermittents[-1]
+            daterange = newest['timestamp'] - oldest['timestamp']
             self.add_row({
                 'id': bugid,
                 'nb': len(intermittents),
@@ -109,6 +113,7 @@ class BugTable(Table):
                 'status': bug['status'],
                 'assigned_to': bug['assigned_to'],
                 'product': bug['product'],
+                'average_day': len(intermittents) / float(daterange.days or 1),
             })
 
 

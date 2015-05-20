@@ -105,6 +105,11 @@ def comma_set(conf, section, option):
     return set(v for v in values if v)
 
 
+def comma_list(conf, section, option):
+    value = conf.get(section, option)
+    return [v.strip() for v in value.split(',')]
+
+
 class Config(ConfigParser.ConfigParser):
     opts_conv = {
         'display-list': {
@@ -112,6 +117,7 @@ class Config(ConfigParser.ConfigParser):
             'show_resolved': ConfigParser.ConfigParser.getboolean,
             'show_assigned_to': ConfigParser.ConfigParser.getboolean,
             'filter_products': comma_set,
+            'visible_columns': comma_list,
         }
     }
 
