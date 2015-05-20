@@ -3,8 +3,9 @@ from mozbattue.utils import intermittents_by_time, MozBattueError
 
 
 class Column(object):
-    def __init__(self, renderer=str):
+    def __init__(self, renderer=str, desc=''):
         self.renderer = renderer
+        self.desc = desc
 
     def render_value(self, value):
         return self.renderer(value)
@@ -85,13 +86,14 @@ class TableRenderer(object):
 
 class BugTable(Table):
     columns = {
-        'id': Column(str),
-        'nb': Column(str),
-        'date': Column(str),
-        'rev': Column(str),
-        'status': Column(str),
-        'assigned_to': Column(str),
-        'product': Column(str),
+        'id': Column(str, desc='Id of the bug'),
+        'nb': Column(str, desc='Number of intermittent occurences found'),
+        'date': Column(str, desc='Date of the first intermittent occurence'),
+        'rev': Column(str,
+                      desc='Revision of the first intermittent occurence'),
+        'status': Column(str, desc='Status of the bug'),
+        'assigned_to': Column(str, desc='Assignment of the bug'),
+        'product': Column(str, desc='Product of the bug'),
     }
 
     def __init__(self, raw_bugs, visible_columns=()):
@@ -107,6 +109,21 @@ class BugTable(Table):
                 'status': bug['status'],
                 'assigned_to': bug['assigned_to'],
                 'product': bug['product'],
+            })
+
+
+class BugTableComment(Table):
+    columns = {
+        'column name': Column(str),
+        'description': Column(str),
+    }
+
+    def __init__(self):
+        Table.__init__(self, visible_columns=('column name', 'description'))
+        for name in sorted(BugTable.columns):
+            self.add_row({
+                'column name': name,
+                'description': BugTable.columns[name].desc
             })
 
 

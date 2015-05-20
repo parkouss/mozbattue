@@ -5,7 +5,7 @@ import logging
 
 from mozbattue.utils import MozBattueError, load_bugs_from_file, dump_bugs, \
     intermittents_by_time, Config, LOG
-from mozbattue.bugs_info import BugTable, IntermittentTable
+from mozbattue.bugs_info import BugTable, IntermittentTable, BugTableComment
 from mozbattue.find_bugs import BugsyFinder, BugsyPrintReporter
 from mozbattue.trigger import trigger_jobs
 
@@ -58,6 +58,12 @@ def do_list(opts):
     print
     print ("Listing %d/%d intermittent bugs."
            % (len(table.data), len(raw_bugs)))
+
+
+def do_list_colums(opts):
+    table = BugTableComment()
+    table.render()
+    print
 
 
 def do_show(opts):
@@ -154,6 +160,11 @@ def parse_args(argv=None):
                       help="Limit the number of bugs shown "
                            "(default: %(default)r - no limit)")
     list.set_defaults(func=do_list)
+
+    list_columns = subparsers.add_parser(
+        'list-columns',
+        help="list the columns available for the list command")
+    list_columns.set_defaults(func=do_list_colums)
 
     show = subparsers.add_parser(
         'show',
