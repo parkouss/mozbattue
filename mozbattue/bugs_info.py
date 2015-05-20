@@ -1,5 +1,5 @@
 import sys
-from mozbattue.utils import intermittents_by_time
+from mozbattue.utils import intermittents_by_time, MozBattueError
 
 
 class Column(object):
@@ -24,6 +24,21 @@ class Table(object):
         for key, reverse in reversed(sort_by):
             self.data = sorted(self.data, key=lambda b: b[key],
                                reverse=reverse)
+
+    def string_sort(self, string_sort):
+        sort_by = []
+        for k in string_sort.split(','):
+            k = k.strip()
+            reverse = False
+            if k.startswith('>'):
+                k = k[1:]
+                reverse = True
+            elif k.startswith('<'):
+                k = k[1:]
+            if k not in self.columns:
+                raise MozBattueError("Unable to sort by unknown column %r" % k)
+            sort_by.append((k, reverse))
+        self.sort(sort_by)
 
     def raw_filter(self, filter):
         self.data = [d for d in self.data if filter(d)]

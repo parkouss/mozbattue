@@ -36,17 +36,6 @@ def read_bugs(opts):
 def do_list(opts):
     raw_bugs = read_bugs(opts)
 
-    sort_by = []
-    for k in opts.sort_by.split(','):
-        k = k.strip()
-        reverse = False
-        if k.startswith('-'):
-            k = k[1:]
-            reverse = True
-        elif k.startswith('+'):
-            k = k[1:]
-        sort_by.append((k, reverse))
-
     def filter(bug):
         if bug['product'] in opts.filter_products:
             return False
@@ -60,7 +49,7 @@ def do_list(opts):
 
     table = BugTable(raw_bugs, ('id', 'nb', 'date', 'product'))
     table.raw_filter(filter)
-    table.sort(sort_by)
+    table.string_sort(opts.sort_by)
     if opts.limit > 0:
         table.data = table.data[:opts.limit]
 
@@ -164,13 +153,13 @@ def parse_args(argv=None):
     )
     add_input_opt(list)
     list.add_argument('-s', '--sort-by',
-                      default='-nb,id',
+                      default='>nb,id',
                       help="sorts the list. Possible criteria are id, nb "
                            "or date which are respectively the bug id, the "
                            "number of intermittents and the date of the "
                            "first intermittent occurence. By default the "
                            "sort is ascending, this can be inversed by "
-                           "adding '-' before the criteria name. "
+                           "adding '>' before the criteria name. "
                            "(default: %(default)r)")
     list.add_argument('-m', '--min-intermittents',
                       default=10,
