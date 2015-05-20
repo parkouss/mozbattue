@@ -58,4 +58,4 @@ You can generate the default configuration with the command::
   mozbattue generate-conf
 
 This will write a *mozbattue.ini* file in the current folder that you can
-customize to your needs.
+use to change some default values.
