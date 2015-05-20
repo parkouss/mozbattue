@@ -4,7 +4,7 @@ import sys
 import logging
 
 from mozbattue.utils import MozBattueError, load_bugs_from_file, dump_bugs, \
-    intermittents_by_time, Config, LOG
+    intermittents_by_time, Config, LOG, get_default_conf_path
 from mozbattue.bugs_info import BugTable, IntermittentTable, BugTableComment
 from mozbattue.find_bugs import BugsyFinder, BugsyPrintReporter
 from mozbattue.trigger import trigger_jobs
@@ -112,6 +112,13 @@ def do_trigger(opts):
     print 'Note that the builds on treeherder will appear in a few minutes.'
 
 
+def do_generate_conf(opts):
+    with open(opts.conf_file, 'w') as fw:
+        with open(get_default_conf_path()) as fr:
+            fw.write(fr.read())
+    print '%r wrote.' % opts.conf_file
+
+
 def parse_args(argv=None):
     intermittent_file = 'intermittents.json'
     parser = argparse.ArgumentParser()
@@ -201,6 +208,14 @@ def parse_args(argv=None):
                          help="flag to test without actual push")
     trigger.set_defaults(func=do_trigger)
 
+    generate_conf = subparsers.add_parser(
+        'generate-conf',
+        help="generate the default configuration file so you can customize it",
+    )
+    generate_conf.add_argument('--conf-file', default='mozbattue.ini',
+                               help="output file path to write the conf.")
+    generate_conf.set_defaults(func=do_generate_conf)
+
     return parser.parse_args(argv)
 
 
@@ -211,6 +226,8 @@ def main(argv=None):
     logging.getLogger('requests').setLevel(logging.WARNING)
 
     opts.conf = Config()
+    # always load the default configuration file
+    opts.conf.read(get_default_conf_path())
     if os.path.isfile(opts.conf_file):
         LOG.info("Reading conf file %r", opts.conf_file)
         opts.conf.read(opts.conf_file)

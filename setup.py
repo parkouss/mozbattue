@@ -19,6 +19,9 @@ setup(
     author_email='j.parkouss@gmail.com',
     license='MPL 1.1/GPL 2.0/LGPL 2.1',
     packages=['mozbattue'],
+    package_data = {
+        '': ['*.ini'],
+    },
     entry_points="""
         [console_scripts]
         mozbattue = mozbattue.main:main

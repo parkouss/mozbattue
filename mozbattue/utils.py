@@ -2,12 +2,20 @@ import json
 import datetime
 import logging
 import re
+import os
 import ConfigParser
 
 DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%S'
 JSON_FORMAT_VERSION = '1.2'
 
 LOG = logging.getLogger('mozbattue')
+
+
+def get_default_conf_path():
+    return os.path.join(
+        os.path.dirname(os.path.realpath(__file__)),
+        'mozbattue.ini'
+    )
 
 
 class MozBattueError(Exception):

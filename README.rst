@@ -17,10 +17,6 @@ For now::
 
   pip install git+https://github.com/parkouss/mozbattue.git
 
-You can also copy the https://github.com/parkouss/mozbattue/blob/master/mozbattue.ini
-file in your working dir to have some default configuration when using mozbattue
-to find firefox bugs.
-
 Quick start
 ===========
 
@@ -52,3 +48,14 @@ try to find the root cause.
   To run the same build on the 30th revision before the oldest intermittent::
 
     mozbattue trigger <bugid> -30 --times 20
+
+
+Customisation
+=============
+
+You can generate the default configuration with the command::
+
+  mozbattue generate-conf
+
+This will write a *mozbattue.ini* file in the current folder that you can
+customize to your needs.
