@@ -91,7 +91,29 @@ class IntermittentFilter(object):
         return True
 
 
+def comma_set(conf, section, option):
+    value = conf.get(section, option)
+    values = [v.strip() for v in value.split(',')]
+    return set(v for v in values if v)
+
+
 class Config(ConfigParser.ConfigParser):
+    opts_conv = {
+        'display-list': {
+            'min_intermittents': ConfigParser.ConfigParser.getint,
+            'show_resolved': ConfigParser.ConfigParser.getboolean,
+            'show_assigned_to': ConfigParser.ConfigParser.getboolean,
+            'filter_products': comma_set,
+        }
+    }
+
+    def convert(self, section, option):
+        try:
+            conv = self.opts_conv[section][option]
+        except KeyError:
+            conv = ConfigParser.ConfigParser.get
+        return conv(self, section, option)
+
     def get_default(self, section, name, default=None):
         try:
             return self.get(section, name)
@@ -107,3 +129,13 @@ class Config(ConfigParser.ConfigParser):
                     filter.add_filter_regex(regex)
             return filter
         return None
+
+    def get_defaults(self, section):
+        try:
+            options = self.options(section)
+        except ConfigParser.NoSectionError:
+            return {}
+        result = {}
+        for opt in options:
+            result[opt] = self.convert(section, opt)
+        return result

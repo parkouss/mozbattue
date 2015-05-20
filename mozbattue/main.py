@@ -106,11 +106,6 @@ def do_trigger(opts):
     print 'Note that the builds on treeherder will appear in a few minutes.'
 
 
-def comma_set(value):
-    values = [v.strip() for v in value.split(',')]
-    return set(v for v in values if v)
-
-
 def parse_args(argv=None):
     intermittent_file = 'intermittents.json'
     parser = argparse.ArgumentParser()
@@ -152,32 +147,12 @@ def parse_args(argv=None):
                     "filtering them to find the most important ones easily."
     )
     add_input_opt(list)
-    list.add_argument('-s', '--sort-by',
-                      default='>nb,id',
-                      help="sorts the list. Possible criteria are id, nb "
-                           "or date which are respectively the bug id, the "
-                           "number of intermittents and the date of the "
-                           "first intermittent occurence. By default the "
-                           "sort is ascending, this can be inversed by "
-                           "adding '>' before the criteria name. "
-                           "(default: %(default)r)")
-    list.add_argument('-m', '--min-intermittents',
-                      default=10,
-                      type=int,
-                      help="Minimum number of intermittent instances "
-                           "required to list a bug (default: %(default)r)")
+
     list.add_argument('-l', '--limit',
                       default=0,
                       type=int,
                       help="Limit the number of bugs shown "
                            "(default: %(default)r - no limit)")
-    list.add_argument('--show-resolved', action='store_true',
-                      help="Also list the resolved bugs.")
-    list.add_argument('--show-assigned-to', action='store_true',
-                      help="Also list the bugs that are assigned.")
-    list.add_argument('--filter-products', default=(),
-                      type=comma_set,
-                      help="comma separated list of products to filter")
     list.set_defaults(func=do_list)
 
     show = subparsers.add_parser(
@@ -228,6 +203,7 @@ def main(argv=None):
     if os.path.isfile(opts.conf_file):
         LOG.info("Reading conf file %r", opts.conf_file)
         opts.conf.read(opts.conf_file)
+    opts.__dict__.update(opts.conf.get_defaults('display-list'))
     try:
         opts.func(opts)
     except KeyboardInterrupt:
