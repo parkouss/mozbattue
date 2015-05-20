@@ -4,7 +4,8 @@ import sys
 import logging
 
 from mozbattue.utils import MozBattueError, load_bugs_from_file, dump_bugs, \
-    intermittents_by_time, Config, LOG, get_default_conf_path
+    intermittents_by_time, Config, LOG, get_default_conf_path, \
+    create_filter_intermittents
 from mozbattue.bugs_info import BugTable, IntermittentTable, BugTableComment
 from mozbattue.find_bugs import BugsyFinder, BugsyPrintReporter
 from mozbattue.trigger import trigger_jobs
@@ -29,7 +30,9 @@ def do_update(opts):
 def read_bugs(opts):
     return load_bugs_from_file(
         opts.input,
-        filter_intermittents=opts.conf.create_filter_intermittents()
+        filter_intermittents=create_filter_intermittents(
+            opts.intermittents_filter_buildname
+        )
     )
 
 
@@ -225,13 +228,13 @@ def main(argv=None):
     logging.basicConfig(level=logging.INFO)
     logging.getLogger('requests').setLevel(logging.WARNING)
 
-    opts.conf = Config()
+    conf = Config()
     # always load the default configuration file
-    opts.conf.read(get_default_conf_path())
+    conf.read(get_default_conf_path())
     if os.path.isfile(opts.conf_file):
         LOG.info("Reading conf file %r", opts.conf_file)
-        opts.conf.read(opts.conf_file)
-    opts.__dict__.update(opts.conf.get_defaults('display-list'))
+        conf.read(opts.conf_file)
+    opts.__dict__.update(conf.as_dict())
     try:
         opts.func(opts)
     except KeyboardInterrupt:

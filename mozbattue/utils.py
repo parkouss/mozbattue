@@ -99,6 +99,16 @@ class IntermittentFilter(object):
         return True
 
 
+def create_filter_intermittents(regexes_str):
+    if regexes_str:
+        filter = IntermittentFilter()
+        for regex in regexes_str.splitlines():
+            if regex:
+                filter.add_filter_regex(regex)
+        return filter
+    return None
+
+
 def comma_set(conf, section, option):
     value = conf.get(section, option)
     values = [v.strip() for v in value.split(',')]
@@ -128,22 +138,6 @@ class Config(ConfigParser.ConfigParser):
             conv = ConfigParser.ConfigParser.get
         return conv(self, section, option)
 
-    def get_default(self, section, name, default=None):
-        try:
-            return self.get(section, name)
-        except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
-            return default
-
-    def create_filter_intermittents(self):
-        regexes = self.get_default("display", 'intermittents_filter_buildname')
-        if regexes:
-            filter = IntermittentFilter()
-            for regex in regexes.splitlines():
-                if regex:
-                    filter.add_filter_regex(regex)
-            return filter
-        return None
-
     def get_defaults(self, section):
         try:
             options = self.options(section)
@@ -153,3 +147,9 @@ class Config(ConfigParser.ConfigParser):
         for opt in options:
             result[opt] = self.convert(section, opt)
         return result
+
+    def as_dict(self):
+        data = {}
+        for section in ('display', 'display-list'):
+            data.update(self.get_defaults(section))
+        return data
