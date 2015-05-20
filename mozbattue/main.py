@@ -15,7 +15,7 @@ def do_update(opts):
     # load previous bugs if any
     previous_bugs = None
     try:
-        previous_bugs = load_bugs_from_file(opts.output,
+        previous_bugs = load_bugs_from_file(opts.intermittents_json_file,
                                             kept_no_intermittents=True)
     except:
         pass
@@ -23,13 +23,18 @@ def do_update(opts):
     finder = BugsyFinder(reporter=BugsyPrintReporter(),
                          previous_bugs=previous_bugs)
     bugs = finder.find(days_ago=opts.days_ago)
-    with open(opts.output, 'w') as f:
+
+    json_dir = os.path.dirname(opts.intermittents_json_file)
+    if not os.path.isdir(json_dir):
+        os.makedirs(json_dir)
+
+    with open(opts.intermittents_json_file, 'w') as f:
         dump_bugs(bugs, f)
 
 
 def read_bugs(opts):
     return load_bugs_from_file(
-        opts.input,
+        opts.intermittents_json_file,
         filter_intermittents=create_filter_intermittents(
             opts.intermittents_filter_buildname
         )
@@ -139,10 +144,6 @@ def parse_args(argv=None):
                     "store the results in a local file (%r) so the data "
                     "can be reused by other commands." % intermittent_file
     )
-    update.add_argument('-o', '--output',
-                        default=intermittent_file,
-                        help="file to store the intermittent bugs data "
-                             "(default: %(default)r)")
     update.add_argument('-d', '--days-ago',
                         default=27,
                         type=int,
@@ -150,19 +151,12 @@ def parse_args(argv=None):
                              "(default: %(default)r)")
     update.set_defaults(func=do_update)
 
-    def add_input_opt(p):
-        p.add_argument('-i', '--input',
-                       default=intermittent_file,
-                       help="file path where bugs data is stored "
-                            "(default: %(default)r)")
-
     list = subparsers.add_parser(
         'list',
         help="list stored bugs",
         description="List the stored intermittent bugs, ordering and "
                     "filtering them to find the most important ones easily."
     )
-    add_input_opt(list)
 
     list.add_argument('-l', '--limit',
                       default=0,
@@ -182,7 +176,6 @@ def parse_args(argv=None):
         description="Print detailed information about one bug, such as the "
                     "revision, date and buildname of the oldest intermittent."
     )
-    add_input_opt(show)
     show.add_argument("-f", '--full', action='store_true',
                       help="Show all details")
     show.add_argument("bugid")
@@ -197,7 +190,6 @@ def parse_args(argv=None):
                     "for the 15th revision before the oldest one in bug "
                     "12345 20 times."
     )
-    add_input_opt(trigger)
     trigger.add_argument("bugid")
     trigger.add_argument("back_revisions", type=int,
                          help="Number of revisions to go back")
@@ -235,6 +227,8 @@ def main(argv=None):
         LOG.info("Reading conf file %r", opts.conf_file)
         conf.read(opts.conf_file)
     opts.__dict__.update(conf.as_dict())
+    opts.intermittents_json_file = \
+        os.path.realpath(os.path.expanduser(opts.intermittents_json_file))
     try:
         opts.func(opts)
     except KeyboardInterrupt:

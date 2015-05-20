@@ -150,6 +150,6 @@ class Config(ConfigParser.ConfigParser):
 
     def as_dict(self):
         data = {}
-        for section in ('display', 'display-list'):
+        for section in ('data', 'display', 'display-list'):
             data.update(self.get_defaults(section))
         return data
