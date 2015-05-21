@@ -98,6 +98,12 @@ def intermittents_groupedby_bname(intermittents):
     return sorted(grouped, key=lambda k: k['occurences'], reverse=True)
 
 
+def split_build_name(buildname):
+    data = {}
+    data['platform_branch'], data['testname'] = buildname.split(' test ')
+    return data
+
+
 class IntermittentFilter(object):
     def __init__(self):
         self.regexes = []

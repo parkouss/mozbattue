@@ -5,7 +5,8 @@ import logging
 
 from mozbattue.utils import MozBattueError, load_bugs_from_file, dump_bugs, \
     intermittents_by_time, Config, LOG, get_default_conf_path, \
-    create_filter_intermittents, intermittents_groupedby_bname
+    create_filter_intermittents, intermittents_groupedby_bname, \
+    split_build_name
 from mozbattue.bugs_info import BugTable, IntermittentTable, BugTableComment, \
     IntermittentsGroupedByNameTable
 from mozbattue.find_bugs import BugsyFinder, BugsyPrintReporter
@@ -114,6 +115,15 @@ def do_trigger(opts):
         for intermittent in intermittents:
             if opts.buildname == intermittent['buildname']:
                 oldest = intermittent
+                break
+    else:
+        # we can use the mostly triggered testname as good default
+        most_triggered_bname = \
+            intermittents_groupedby_bname(intermittents)[0]['buildname']
+        test_name = split_build_name(most_triggered_bname)['testname']
+        for i in intermittents:
+            if split_build_name(i['buildname'])['testname'] == test_name:
+                oldest = i
                 break
 
     url = trigger_jobs(oldest['buildname'],
