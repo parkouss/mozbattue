@@ -109,7 +109,14 @@ def do_trigger(opts):
         intermittents_by_time(raw_bugs[opts.bugid]['intermittents'])
     oldest = intermittents[0]
 
-    url = trigger_jobs(opts.buildname or oldest['buildname'],
+    if opts.buildname:
+        # let's find the oldest intermittent for this buildname
+        for intermittent in intermittents:
+            if opts.buildname == intermittent['buildname']:
+                oldest = intermittent
+                break
+
+    url = trigger_jobs(oldest['buildname'],
                        oldest['revision'],
                        back_revisions=abs(opts.back_revisions),
                        times=opts.times, dry_run=opts.dry_run)
