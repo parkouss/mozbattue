@@ -13,10 +13,12 @@ class Column(object):
 
 class Table(object):
     columns = {}
+    visible_columns = ()
 
     def __init__(self, visible_columns=()):
         self.data = []
-        self.visible_columns = visible_columns or self.columns.keys()
+        if visible_columns:
+            self.visible_columns = visible_columns
 
     def add_row(self, row):
         self.data.append(row)
@@ -122,9 +124,10 @@ class BugTableComment(Table):
         'column name': Column(str),
         'description': Column(str),
     }
+    visible_columns = ('column name', 'description')
 
     def __init__(self):
-        Table.__init__(self, visible_columns=('column name', 'description'))
+        Table.__init__(self)
         for name in sorted(BugTable.columns):
             self.add_row({
                 'column name': name,
@@ -138,9 +141,10 @@ class IntermittentTable(Table):
         'revision': Column(str),
         'buildname': Column(lambda v: repr(str(v))),
     }
+    visible_columns = ('date', 'revision', 'buildname')
 
-    def __init__(self, intermittents, visible_columns=()):
-        Table.__init__(self, visible_columns=visible_columns)
+    def __init__(self, intermittents):
+        Table.__init__(self)
         for i in intermittents:
             self.add_row({
                 'date': i['timestamp'],
@@ -154,6 +158,4 @@ class IntermittentsGroupedByNameTable(Table):
         'buildname': Column(lambda v: repr(str(v))),
         'occurences': Column(str),
     }
-
-    def __init__(self):
-        Table.__init__(self, visible_columns=('occurences', 'buildname'))
+    visible_columns = ('occurences', 'buildname')

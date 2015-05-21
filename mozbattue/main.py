@@ -98,9 +98,7 @@ def do_show(opts):
 
     if opts.full:
         print "List of intermittents:"
-
-        IntermittentTable(intermittents,
-                          ('date', 'revision', 'buildname')).render()
+        IntermittentTable(intermittents).render()
 
 
 def do_trigger(opts):
