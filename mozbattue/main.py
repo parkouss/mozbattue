@@ -5,8 +5,9 @@ import logging
 
 from mozbattue.utils import MozBattueError, load_bugs_from_file, dump_bugs, \
     intermittents_by_time, Config, LOG, get_default_conf_path, \
-    create_filter_intermittents
-from mozbattue.bugs_info import BugTable, IntermittentTable, BugTableComment
+    create_filter_intermittents, intermittents_groupedby_bname
+from mozbattue.bugs_info import BugTable, IntermittentTable, BugTableComment, \
+    IntermittentsGroupedByNameTable
 from mozbattue.find_bugs import BugsyFinder, BugsyPrintReporter
 from mozbattue.trigger import trigger_jobs
 
@@ -82,22 +83,24 @@ def do_show(opts):
         intermittents_by_time(raw_bugs[opts.bugid]['intermittents'])
     oldest = intermittents[0]
 
-    print "Oldest intermittent on %s (%s)" % (oldest['timestamp'],
-                                              oldest['revision'])
+    print "Oldest intermittent on %r: %s (%s)" % (oldest['buildname'],
+                                                  oldest['timestamp'],
+                                                  oldest['revision'])
+    print
+
+    print "buildnames by number of occurrences:"
+    table = IntermittentsGroupedByNameTable()
+    for data in intermittents_groupedby_bname(intermittents):
+        table.add_row(data)
+    table.render()
+
     print
 
     if opts.full:
         print "List of intermittents:"
 
-        visible_columns = ('date', 'revision', 'buildname')
-    else:
-        intermittents = [i for i in intermittents
-                         if i['revision'] == oldest['revision']]
-        print "Was triggered by:"
-        visible_columns = ('date', 'buildname')
-
-    table = IntermittentTable(intermittents, visible_columns)
-    table.render()
+        IntermittentTable(intermittents,
+                          ('date', 'revision', 'buildname')).render()
 
 
 def do_trigger(opts):

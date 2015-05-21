@@ -147,3 +147,13 @@ class IntermittentTable(Table):
                 'revision': i['revision'],
                 'buildname': i['buildname'],
             })
+
+
+class IntermittentsGroupedByNameTable(Table):
+    columns = {
+        'buildname': Column(lambda v: repr(str(v))),
+        'occurences': Column(str),
+    }
+
+    def __init__(self):
+        Table.__init__(self, visible_columns=('occurences', 'buildname'))

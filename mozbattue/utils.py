@@ -4,6 +4,7 @@ import logging
 import re
 import os
 import ConfigParser
+import itertools
 
 DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%S'
 JSON_FORMAT_VERSION = '1.2'
@@ -81,6 +82,20 @@ def load_bugs_from_file(fname, kept_no_intermittents=False,
 
 def intermittents_by_time(intermittents):
     return sorted(intermittents, key=lambda i: i['timestamp'])
+
+
+def intermittents_groupedby_bname(intermittents):
+    def by_bname(intermittent):
+        return intermittent['buildname']
+
+    i_by_bname = sorted(intermittents, key=by_bname)
+    grouped = []
+    for bname, i in itertools.groupby(i_by_bname, key=by_bname):
+        grouped.append({
+            'buildname': bname,
+            'occurences': len(list(i))
+        })
+    return sorted(grouped, key=lambda k: k['occurences'], reverse=True)
 
 
 class IntermittentFilter(object):
