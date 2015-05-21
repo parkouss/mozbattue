@@ -100,7 +100,10 @@ def intermittents_groupedby_bname(intermittents):
 
 def split_build_name(buildname):
     data = {}
-    data['platform_branch'], data['testname'] = buildname.split(' test ')
+    try:
+        data['platform_branch'], data['testname'] = buildname.split(' test ')
+    except ValueError:
+        pass
     return data
 
 

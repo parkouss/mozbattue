@@ -121,11 +121,17 @@ def do_trigger(opts):
         # and trigger that for the oldest revision
         most_triggered_bname = \
             intermittents_groupedby_bname(intermittents)[0]['buildname']
-        test_name = split_build_name(most_triggered_bname)['testname']
-        platform_branch = \
-            split_build_name(oldest['buildname'])['platform_branch']
-        oldest = oldest.copy()
-        oldest['buildname'] = '%s test %s' % (platform_branch, test_name)
+        try:
+            test_name = split_build_name(most_triggered_bname)['testname']
+            platform_branch = \
+                split_build_name(oldest['buildname'])['platform_branch']
+        except KeyError:
+            # we could have a KeyError if split_build_name fails.
+            # in that case, just build the first intermittent
+            pass
+        else:
+            oldest = oldest.copy()
+            oldest['buildname'] = '%s test %s' % (platform_branch, test_name)
 
     url = trigger_jobs(oldest['buildname'],
                        oldest['revision'],
